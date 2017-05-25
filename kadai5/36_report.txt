@@ -1,0 +1,45 @@
+課題36
+
+substr関数は、文字列sの中身をpにコピーした後、最初のaの文字以降のポインタを返すような仕様になっている。しかしそれだと、呼び出し元の関数からは何文字前からその文字列が始まっていて、何文字前を起点としたメモリ領域を使っているのかがわからないから、freeすることができない。main()側からfreeするためには、substrの返すポインタが、確保した領域の先頭になっていなければならない。だから改善策としては、
+
+char *substr(char *s)
+{
+    int i = 0;
+    char *p;
+
+    while (s[i] != '\0') {
+      if (s[i] == 'a')
+	break;
+      i++;
+    }
+ 
+    p = malloc(strlen(s) - i);
+    strcpy(p, s+i);
+ 
+    return p;
+}
+ 
+のように、そもそもpを欲しい文字列のみにしてしまうか、
+
+
+char *substr(char *s)
+{
+    int i = 0;
+    char *p;
+    char *pp;
+ 
+    p = malloc(strlen(s) + 1);
+    strcpy(p, s);
+    while (p[i] != '\0') {
+        if (p[i] == 'a')
+            break;
+        i++;
+    }
+    pp = malloc(strlen(s) - i);
+    strcpy(pp, p+i);
+    free(p);
+ 
+    return pp;
+}
+
+pは残して、ppという欲しい文字列だけを含んだ領域を作ってそこへのポインタを返すようにすれば、main()内でfree(s[i])をすることができる。

@@ -1,0 +1,1 @@
+実行するとpointer stewと表示される

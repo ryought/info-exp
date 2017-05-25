@@ -1,0 +1,49 @@
+以下のアセンブリを作って104b.sとして保存した
+
+
+    .globl swap_gt
+swap_gt:   # 処理開始
+    # %r3 第一引数(pointer) %r4 第二引数(pointer)
+    lwa %r5, 0(%r3)  # r5, r6にそれぞれr3,r4に入っているアドレスの内容をロード
+    lwa %r6, 0(%r4)
+    
+    cmpd %r5, %r6  # 比較
+    bgt swap  # もしr5が大きければ、交換する。違うならばそのまま戻る。
+    blr
+
+swap:
+    stw %r6, 0(%r3) # 入れ替える
+    stw %r5, 0(%r4)
+    blr 
+
+
+この関数swap_gt()の動作を確かめるべく、以下の104b.cを作って確かめた。
+
+
+#include <stdio.h>
+
+void swap_gt(int *x, int *y);
+
+int main() {
+  int x;
+  int y;
+  x = 1;
+  y = 2;
+  swap_gt(&x, &y);
+  printf("1,2 -> %d,%d\n", x, y);
+
+  x = 10;
+  y = 2;
+  swap_gt(&x, &y);
+  printf("10,2 -> %d,%d\n", x, y);
+  return 0;
+} 
+
+
+
+これをコンパイルして実行した。
+$ gcc -Wall 104b.c 104b.s -o main
+$ ./main
+1,2 -> 1,2
+10,2 -> 2,10
+となるので、きちんとスワップされている。

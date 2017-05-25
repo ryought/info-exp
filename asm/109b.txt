@@ -1,0 +1,51 @@
+109bを解いた。
+まず以下のアセンブリプログラムを作った。
+
+    .globl puts_twice
+    .section ".text"
+    .align 2
+puts_twice:
+    # 関数呼び出しをするので、%lr の保存をする。スタックフレームが必要
+    # 関数プロローグ
+    mflr %r0   # %lrリンクレジスタ から %r0 にコピー
+    std %r0, 16(%r1)   # r1はスタックポインタ 親のスタックフレーム内に残しておく
+    stdu %r1, -128(%r1)   # スタックフレームつくる 親のスタックフレームのアドレスを保存しておいて、レジスタの書き換え
+    std %r3, 32(%r1)   # 引数を保存
+
+    # 関数中身
+    ld %r3, 32(%r1)
+    bl puts   # %lr に保存して飛ぶ, blrをすると次の行に戻ってくる
+    nop
+
+    ld %r3, 32(%r1)
+    bl puts
+    nop
+
+    # 終了 関数エピローグ
+    ld %r1, 0(%r1)   # スタックフレーム破棄
+    ld %r0, 16(%r1)   # 保存したlrの内容をr0にコピー
+    mtlr %r0    # lrの復元
+    blr   # %lr の指すアドレスに飛ぶ
+    
+
+次にこの動作を確かめるためにCプログラムを作った
+
+
+#include <stdio.h>
+
+void puts_twice(const char *s);
+
+int main() {
+  puts_twice("Hello!");
+  return 0;
+}
+
+
+
+これを実行する。
+$ gcc -Wall 109b.c 109b.s -o main
+$ ./main
+Hello!
+Hello!
+
+関数の中で他の関数を2回呼び出せたことが確認できる

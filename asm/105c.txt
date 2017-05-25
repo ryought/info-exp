@@ -1,0 +1,60 @@
+105cをといた。
+
+以下のアセンブリファイルを作った。
+$ cat 105c.s
+	.globl fib
+fib:
+	cmpdi %r3, 1
+	beq one
+	blt zero
+	li %r4, 1
+	li %r5, 1
+	li %r7, 1 # カウンタ
+first:	
+	# %4 + %5 -> %6, %5->%4, %6->%5 というふうに足していく
+	add %r6, %r4, %r5
+	mr %r4, %r5
+	mr %r5, %r6
+	
+	addi %r7, %r7, 1 # カウンタインクリメント
+	cmpd %r7, %r3
+	blt first
+	mr %r3, %r4
+	blr
+
+one:
+	li %r3, 1
+	blr
+
+zero:
+	li %r3, 0
+	blr
+	
+
+それの実行を試すために以下を作った
+$ cat 105c.c
+#include <stdio.h>
+
+int fib(int n);
+
+int main() {
+  printf("%d\n", fib(0));
+  printf("%d\n", fib(1));
+  printf("%d\n", fib(5));
+  printf("%d\n", fib(15));
+  printf("%d\n", fib(42));
+  return 0;
+}
+
+
+これをコンパイル、リンクして実行する
+$ gcc -Wall 105c.c 105c.s -o out
+$ ./out
+0
+1
+5
+610
+267914296
+
+
+これはテストケース通りに動いているように推測される。

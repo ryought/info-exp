@@ -1,0 +1,9 @@
+# binary
+out
+a.out
+*.dSYM
+
+
+# document
+pdf/
+

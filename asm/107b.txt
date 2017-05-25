@@ -1,0 +1,42 @@
+107bをといた。
+
+まず以下のアセンブリプログラムを作った。
+
+$ cat 107b.s
+	# 文字列の情報は読み取り専用で良いからrodataセクションに置いとく
+	.section ".rodata"
+	.align 4
+data_string:	
+	.string "Hello, World!\0"
+
+
+	# プログラムなのでtextセクションに
+	.section ".text"
+	.align 2
+	.globl hello
+hello:
+	addis %r3, %r2, data_string@toc@ha
+	addi %r3, %r3, data_string@toc@l
+	blr
+
+
+次にそれを確かめるためのCプログラムを作った。
+
+$ cat 107b.c
+#include <stdio.h>
+
+const char *hello(void);
+
+int main() {
+  puts(hello());
+  return 0;
+}
+
+
+これをコンパイルして実行すると
+$ gcc -Wall 107b.c 107b.s -o out
+$ ./out
+Hello, World!
+
+
+これはrodataの中身が読み出せたことを示す。

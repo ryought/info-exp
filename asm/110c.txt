@@ -1,0 +1,57 @@
+110cを解いた。
+まず以下のアセンブリプログラムを作った
+
+    .globl factorial
+factorial:   # f(0) = 1, f(n) = n * f(n-1)
+    cmpdi %r3, 0
+    beq initial
+
+    # スタックフレームつくる
+    mflr %r0
+    std %r0, 16(%r1)
+    stdu %r1, -64(%r1) # スタックフレームの確保
+    std %r3, 32(%r1)  # 引数を 16 に保存
+
+    # factorial(n-1)の計算
+    addi %r3, %r3, -1
+    bl factorial     # r3 に fac(n-1) が入る
+
+    # nの復元
+    ld %r4, 32(%r1)   # n
+    mulld %r3, %r3, %r4
+
+    ld %r1, 0(%r1)
+    ld %r0, 16(%r1)
+    mtlr %r0
+    blr
+
+initial:
+    li %r3, 1
+    beqlr
+
+
+次にこの動作を確かめるためにCプログラムを作った。
+
+
+#include <stdio.h>
+
+int factorial(int n);
+
+int main() {
+  printf("0 %d\n", factorial(0));
+  printf("5 %d\n", factorial(5));
+  printf("10 %d\n", factorial(10));
+  return 0;
+}
+
+
+
+これを実行すると以下のようになる
+
+$ gcc -Wall 110c.c 110c.s -o main
+$ ./main
+0 1
+5 120
+10 3628800
+
+再帰呼び出しに寄って計算できている。

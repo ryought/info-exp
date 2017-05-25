@@ -1,0 +1,41 @@
+106cをといた。
+まず以下のアセンブリプログラム106c.sを作った
+$ cat 106c.s
+	.globl mystrlen
+mystrlen:
+	li %r4, 0    # 文字数カウンタの初期化
+start:	
+	lbz %r5, 0(%r3)   # 1byteロード
+	cmpdi %r5, 0    # もしEOFならば終了
+	beq end
+	# 処理
+	addi %r4, %r4, 1  # 文字数を1つあげる
+	addi %r3, %r3, 1  # 読むメモリ位置をインクリメント
+	b start  # 最初に戻る
+end:
+	mr %r3, %r4  # 終了処理、返り値を設定
+	blr
+
+
+
+それを確かめるcプログラムを作った。
+$ cat 106c.c
+#include <stdio.h>
+
+size_t mystrlen(const char *s);
+
+int main() {
+  printf("%lu\n", mystrlen("foo"));
+  printf("%lu\n", mystrlen(""));
+  printf("%lu\n", mystrlen("\n\0\n"));
+  return 0;
+}
+
+
+これをコンパイル、リンクする
+$ gcc -Wall 106c.c 106c.s -o out
+$ ./out 
+3
+0
+1
+

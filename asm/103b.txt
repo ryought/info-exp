@@ -1,0 +1,37 @@
+以下のアセンブリを作って103b.sとして保存した
+
+
+    .globl enlarge  # enlargeコマンドをシンボルテーブルに追加する
+enlarge:  # 開始地点
+    cmpdi %r3, 0  # 引数と0の比較
+    bge notnegative # %r3>=0なら
+    addi %r3, %r3, -1 # %r3 < 0なら
+    blr
+
+notnegative:
+    addi %r3, %r3, 1
+    blr
+
+
+この関数enlarge()の動作を確かめるべく、以下の103b.cを作って確かめた。
+
+
+#include <stdio.h>
+
+int enlarge(int x);
+
+int main() {
+  printf("%d == 1?\n", enlarge(0));
+  printf("%d == 101?\n", enlarge(100));
+  printf("%d == -101?\n", enlarge(-100));
+  return 0;
+}
+
+
+
+これをコンパイルして実行した。
+$ gcc -Wall 103b.c 103b.s -o main
+$ ./main
+1 == 1?
+101 == 101?
+-101 == -101?

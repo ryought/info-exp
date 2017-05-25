@@ -1,0 +1,44 @@
+0 ; 0
+(= 1 2) ; #f
+(define a (+ (- (* (* 1 2) 3) (* 4 5)) (+ (* 6 7) (* 8 9)))) ;なし
+a ; 100
+(define b (- a 1)) ; なし
+b ; 99
+
+(b) ; わかんない、関数宣言と同じ
+;; ERROR: In procedure 99:
+;;ERROR: Wrong type to apply: 99
+
+(b + a) ; エラー
+;; ERROR: In procedure 99:
+;;ERROR: Wrong type to apply: 99
+
+(define c (if (even? a) "even" "odd")) ;　なし
+c ; "even"
+(let ((a 1)) (if (even? a) "even" "odd")) ;
+(let ((a 1)) c)
+(define f (lambda (x) (+ x a))) ;; なし
+
+f ;; 関数だよ、みたいな表示
+;; #<procedure f (x)>
+
+f(a) ;; エラー
+(f a)　;; 200
+(f (a))  ;; わからない
+;; ERROR: In procedure 100:
+ERROR: Wrong type to apply: 100
+
+
+(define d f) ;; なし
+d ;; 関数だよみたいな表示
+(d b) ;; 199
+((if (even? a) + *) 1 2) ;; 3
+((lambda (x a) (+ x a)) a b) ;; 199
+(define g (lambda (x a) (+ x a))) ;; なし
+(g a b) ;; 199
+(define h (lambda (x) (lambda (a) (+ x a)))) ;; なし
+h ;; 関数だよ
+((h a) b) ;; 199
+(h a b) ;; エラー
+(h a) ;; 関数だよ
+((h (f a)) (g a b)) ;; 200+199 399

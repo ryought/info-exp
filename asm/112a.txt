@@ -1,0 +1,58 @@
+112aをといた。
+以下のアセンブリプログラムをつくった。
+
+    .section ".rodata"
+    .align 3
+zero:
+    .double 0.0
+
+    .section ".text"
+    .globl dot
+    .align 2
+dot:
+    addis %r7, %r2, zero@toc@ha   # 定数データ0.0をf1にロード
+    addi %r7, %r7, zero@toc@l
+    lfd %f1, 0(%r7)
+    # n=0なら飛ばす
+    cmpdi %r3, 0
+    beqlr
+start:  
+    # 引数 r3: サイズ, r4: 配列vのアドレス, r5: 配列wのアドレス
+    lfd %f2, 0(%r4)
+    lfd %f3, 0(%r5)
+    fmul %f2, %f2, %f3  # 行ごとの掛け算
+    fadd %f1, %f1, %f2  # f1に足していく
+
+    addi %r4, %r4, 8  # アドレスのインクリメント
+    addi %r5, %r5, 8  
+    addi %r3, %r3, -1 # 桁数デクリメント
+    cmpdi %r3, 0
+    beqlr   # 残り桁数がなくなれば終了する
+    b start   # まだ行が残ってたら繰り返す
+    
+
+（桁数を検証していないので、若干危ないのかもしれませんが）
+つぎにこれをつかうcプログラムをつくった。
+
+
+#include <stdio.h>
+
+double dot(size_t n, const double v[], const double w[]);
+
+int main() {
+  printf("%f\n", dot(2, &(double[]){-2.32, 23.3}, &(double[]){10.9, 2.5}));
+  printf("%f\n", dot(0, NULL, NULL));
+  printf("%f\n", dot(6, &(double[]){0.0783, 4.57, 13.1, -5.45, 9.60, 9.07}, &(double[]){-5.85, 0.397, 2.11, 4.04, 2.20, -3.48}));
+  return 0;
+}
+
+
+
+これをじっこうする
+$ gcc -Wall 112a.c 112a.s -o out
+$ ./out
+32.962000
+0.000000
+-3.464365
+
+ちゃんと計算できているようだ。
